@@ -36,7 +36,7 @@
    }
    /*
    EVENTS 
-   TODO: abstract hist somehow 
+   TODO: abstract hist and segmenting .... 
    */
    seq_dist.addEventListener("click", function() {
        hist(DATA.lastCalc.seqlen_dist, "Sequence Length Distribution")
@@ -45,22 +45,23 @@
        hist(DATA.lastCalc.qscore_dist, "Quality Score Distribution")
    })
    seq_per_range.addEventListener("click", function() {
-       DATA.calculate(segment())
-       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${min.value} -- ${max.value}`)
+       segPlot()
    })
 
    //should be in DATAhandler class...
    const segment = (min = 0, max = 20) => DATA.all.filter(data => data.mean_qscore >= min && data.mean_qscore <= max)
-
-
-   min.addEventListener("change", function(ev) {
-       DATA.calculate(DATA.all.filter(data => data.mean_qscore >= min && data.mean_qscore <= max))
-       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${this.value} -- ${max.value}`)
-   })
-   max.addEventListener("change", function(ev) {
-       console.log(max, min)
+   const segPlot =  () => {
        DATA.calculate(segment(parseInt(min.value), parseInt(max.value)))
        hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${min.value} -- ${max.value}`)
+       updateNodes(); //updates info on segmenting
+   }
+
+   min.addEventListener("change", function(ev) {
+       segPlot()
+   })
+   max.addEventListener("change", function(ev) {
+       segPlot()
+
    })
 
 
@@ -71,12 +72,9 @@
            fileData.pop(); //yes, bad mutation. Last entry is ndJson undefined
            DATA.addFile(fileData)
 
-
            //TODO just for cool loading update animation -- comment out if you want to wait for all data
-
            DATA.calculate()
            updateNodes();
-
            hist(fileData.map(d => d.seqlen), "Sequence Length Distribution")
        }
        //so it's not skewed bc of one bad read...
@@ -86,33 +84,3 @@
        hist(DATA.all.map(d => d.seqlen), "Sequence Length Distribution")
    }
    render();
-
-
-
-   /* MOCKDATA for reference
-         {
-             "format_conversion": {
-                 "alphabet_conversion": false,
-                 "header_corrected": false
-             },
-             "barcode": "NA",
-             "retcode": "PASS",
-             "exit_status": "Workflow successful",
-             "calibration": false,
-             "barcode_detection": {
-                 "status": "1",
-                 "barcode": "NA",
-                 "barcode_score": 0.0
-             },
-             "start_time": 1497289387,
-             "read_id": "5a864e23-d6ce-436e-bd83-a0a80955eeb6",
-             "seqlen": 4291,
-             "filename": "fastq_runid_b717de22d589c3d70b7e074e2ca3a933006f78c8_10.fastq",
-             "runid": "b717de22d589c3d70b7e074e2ca3a933006f78c8",
-             "mean_qscore": 12.927,
-             "software": {
-                 "time_stamp": "2018-Nov-16 11:38:40",
-                 "version": "3.10.0",
-                 "component": "homogeny"
-             }
-         } */
