@@ -1,6 +1,8 @@
    import {
-       dumb_ndJsonTransform,
-       DataHandler
+       DataHandler,
+       DataLoader,
+       sumField,
+       hist
    } from './utils.js';
 
 
@@ -25,60 +27,40 @@
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
 
+   //get nodes
+   const [tot_reads, tot_seqlen, avg_qscore, avg_seqlen, seq_dist, qscore_dist, seq_per_range] = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen', 'seq_dist', 'qscore_dist', 'seq_per_range'].map(id => document.getElementById(id))
 
-   const nodes = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen'].map(id => document.getElementById(id))
-   console.log(nodes)
+   /*
+   EVENTS */
+   seq_dist.addEventListener("click", function() {
+       //    hist()
+   })
+  
 
-   async function DataLoader(path) {
-       try {
-           const response = await fetch(path)
-           //little roadbump here with ndJson
-           var rawText = await response.text()
-           return dumb_ndJsonTransform(rawText)
 
-       } catch (error) {
-           console.log('error at loading', error)
-           return null
-       }
-
-   }
-   const sumField = (entries, fieldName) => entries.reduce((acc, val) => acc + val[fieldName], 0)
 
    const render = async () => {
        const path = pathStitcher(10);
        const sample = await DataLoader(path);
        console.log('sample', sample)
 
-       //bad mutation. Last entry is undefined
+       //yes, bad mutation. Last entry is undefined
        sample.pop()
 
        console.log(sample[0].barcode, sample.slice(0, 4).reduce((acc, val) => acc + val['seqlen'], 0))
-
-       /*  Highlights the following key figures:
-
- 
-
-  - total number of reads analysed
-
-  - total yield ( sum of seqlen field )
-
-  - average quality score ( average of mean_qscore )
-
-  - average sequence length ( average of seqlen )
-  */
        const totalreads = sample.length;
        const totalseqlen = sumField(sample, 'seqlen');
        const avg_qual = sumField(sample, 'mean_qscore') / totalreads;
        const avg_seqlen = sumField(sample, 'seqlen') / totalreads;
        console.log(totalreads, totalseqlen, avg_qual, avg_seqlen)
 
-       var trace = {
+       const trace = {
+           title: "Sequence Length Distribution",
            x: sample.map(e => e.seqlen),
            type: 'histogram',
        };
-       var data = [trace];
+       const data = [trace];
        Plotly.newPlot('plot', data);
-
 
    }
    render();
