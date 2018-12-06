@@ -1,19 +1,31 @@
+const flatten = (arr) => arr.reduce((flat, toFlatten) => flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten), [])
+console.log('this', this)
 
-const DataHandler = () => {
-    this.allData = [];
-    this.data = [];
-    this.addFile = (newData) => {
-        this.allData = [...this.data, ...newData]
-        this.data = [flatten(...this.data), newData]
-        return this;
+
+//could have been a function, but es6 modules work strangle with .this inside a function body
+class DataHandler {
+    constructor() {
+        this.flatData = [];
+        this.data = [];
     }
-    return this;
+    addFile(newData){
+        this.flatData = [...this.flatData, ...newData]
+        this.data.push(newData)
+        return this;
+    }  
 }
+
+// const f = new DataHandler()
+// console.log(f)
+// f.addFile([2,2,2,2])
+// f.addFile([5,5])
+// console.log(f)
+
+
 
 /*this was painful. TODO: get 3rd party lib*/
 const dumb_ndJsonTransform = (rawText) => rawText.split('\n').map(entry => JSON.parse(`[${entry}]`)).map(el => el[0])
 
-const flatten = (arr) => arr.reduce((flat, toFlatten) => flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten), [])
 export {
     DataHandler,
     flatten,

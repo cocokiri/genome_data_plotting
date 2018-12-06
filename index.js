@@ -23,6 +23,8 @@
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
 
+   console.log('thisaaa', this)
+
    async function DataLoader(path) {
        try {
            const response = await fetch(path)
@@ -36,13 +38,38 @@
        }
 
    }
+   const sumField = (entries, fieldName) => entries.reduce((acc, val) => acc + val[fieldName], 0)
 
    const render = async () => {
        const path = pathStitcher(10);
        const sample = await DataLoader(path);
        console.log('sample', sample)
-   }
+       
+       //bad mutation. Last entry is undefined
+       sample.pop()
 
+       console.log(sample[0].barcode, sample.slice(0,4).reduce((acc, val) => acc + val['seqlen'], 0))
+
+        /*  Highlights the following key figures:
+
+ 
+
+  - total number of reads analysed
+
+  - total yield ( sum of seqlen field )
+
+  - average quality score ( average of mean_qscore )
+
+  - average sequence length ( average of seqlen )
+  */
+       const totalreads = sample.length;
+       const totalseqlen = sumField(sample, 'seqlen' );
+       const avg_qual = sumField(sample, 'mean_qscore') / totalreads;
+       const avg_seqlen = sumField(sample, 'seqlen') / totalreads;
+       console.log(totalreads, totalseqlen, avg_qual, avg_seqlen)
+
+
+   }
    render();
 
 
