@@ -3,6 +3,8 @@
        DataHandler
    } from './utils.js';
 
+
+   console.log("plotly", Plotly)
    const DATA_META = {
        root: 'data',
        preffix: "/fastq_runid_b717de22d589c3d70b7e074e2ca3a933006f78c8_",
@@ -23,7 +25,9 @@
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
 
-   console.log('thisaaa', this)
+
+   const nodes = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen'].map(id => document.getElementById(id))
+   console.log(nodes)
 
    async function DataLoader(path) {
        try {
@@ -44,13 +48,13 @@
        const path = pathStitcher(10);
        const sample = await DataLoader(path);
        console.log('sample', sample)
-       
+
        //bad mutation. Last entry is undefined
        sample.pop()
 
-       console.log(sample[0].barcode, sample.slice(0,4).reduce((acc, val) => acc + val['seqlen'], 0))
+       console.log(sample[0].barcode, sample.slice(0, 4).reduce((acc, val) => acc + val['seqlen'], 0))
 
-        /*  Highlights the following key figures:
+       /*  Highlights the following key figures:
 
  
 
@@ -63,10 +67,17 @@
   - average sequence length ( average of seqlen )
   */
        const totalreads = sample.length;
-       const totalseqlen = sumField(sample, 'seqlen' );
+       const totalseqlen = sumField(sample, 'seqlen');
        const avg_qual = sumField(sample, 'mean_qscore') / totalreads;
        const avg_seqlen = sumField(sample, 'seqlen') / totalreads;
        console.log(totalreads, totalseqlen, avg_qual, avg_seqlen)
+
+       var trace = {
+           x: sample.map(e => e.seqlen),
+           type: 'histogram',
+       };
+       var data = [trace];
+       Plotly.newPlot('plot', data);
 
 
    }

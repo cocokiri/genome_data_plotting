@@ -6,12 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src='index.js'></script>
 </head>
-<script type="module" src="utils.js"></script>
-<script type="module" src='index.js'></script>
+
 
 <body>
-    <button id="b1">HELLO</button>
+    <div class='info' id="tot_reads">HELLO</div>
+    <div class='info' id="tot_seqlen">HELLO</div>
+    <div class='info' id="avg_qscore">HELLO</div>
+    <div class='info' id="avg_seqlen">HELLO</div>
+
+    <div id='plot'></div>
 </body>
 
 </html>
