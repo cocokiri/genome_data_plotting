@@ -28,6 +28,11 @@ class DataHandler {
         this.lastCalc = calc;
         return calc;
     }
+    clipFieldRange(field, range=[0, 20000]) {
+        const [min, max] = range;
+        const cleaned = this.all.filter(dat => dat[field] > min && dat[field] < max);
+        return cleaned;
+    }
 }
 
 function hist(x_values, title, nodeId = 'plot') {

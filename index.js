@@ -8,8 +8,7 @@
    const DATA = new DataHandler();
 
    //Get NODES
-   const [tot_reads, tot_seqlen, avg_qscore, avg_seqlen, seq_dist, qscore_dist, seq_per_range] = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen', 'seq_dist', 'qscore_dist', 'seq_per_range'].map(id => document.getElementById(id))
-
+   const [tot_reads, tot_seqlen, avg_qscore, avg_seqlen, seq_dist, qscore_dist, seq_per_range, min, max] = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen', 'seq_dist', 'qscore_dist', 'seq_per_range', 'min', 'max'].map(id => document.getElementById(id))
 
    const updateNodes = () => {
        [tot_reads, tot_seqlen, avg_qscore, avg_seqlen].forEach(
@@ -18,7 +17,6 @@
            }
        )
    }
-
    const DATA_META = {
        root: 'data',
        preffix: "/fastq_runid_b717de22d589c3d70b7e074e2ca3a933006f78c8_",
@@ -26,7 +24,7 @@
            folder: '.fastq',
            file: '.fastq.data.json'
        },
-       filenumbers: Array(10).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+       filenumbers: Array(2).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
    }
    const pathStitcher = (filenumber, meta = DATA_META) => {
        const {
@@ -37,13 +35,34 @@
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
    /*
-   EVENTS */
+   EVENTS 
+   TODO: abstract hist somehow 
+   */
    seq_dist.addEventListener("click", function() {
        hist(DATA.lastCalc.seqlen_dist, "Sequence Length Distribution")
    })
    qscore_dist.addEventListener("click", function() {
        hist(DATA.lastCalc.qscore_dist, "Quality Score Distribution")
    })
+   seq_per_range.addEventListener("click", function() {
+       DATA.calculate(segment())
+       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${min.value} -- ${max.value}`)
+   })
+
+   //should be in DATAhandler class...
+   const segment = (min = 0, max = 20) => DATA.all.filter(data => data.mean_qscore >= min && data.mean_qscore <= max)
+
+
+   min.addEventListener("change", function(ev) {
+       DATA.calculate(DATA.all.filter(data => data.mean_qscore >= min && data.mean_qscore <= max))
+       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${this.value} -- ${max.value}`)
+   })
+   max.addEventListener("change", function(ev) {
+       console.log(max, min)
+       DATA.calculate(segment(parseInt(min.value), parseInt(max.value)))
+       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${min.value} -- ${max.value}`)
+   })
+
 
    const render = async () => {
        const paths = DATA_META.filenumbers.map(num => pathStitcher(num));
@@ -60,9 +79,9 @@
 
            hist(fileData.map(d => d.seqlen), "Sequence Length Distribution")
        }
-       DATA.calculate();
-       console.log(DATA)
-       console.log('max', Math.max(...DATA.lastCalc.seqlen_dist))
+       //so it's not skewed bc of one bad read...
+       DATA.calculate(DATA.clipFieldRange('seqlen', [0, 8000]));
+       console.log(DATA, 'max', Math.max(...DATA.lastCalc.seqlen_dist))
 
        hist(DATA.all.map(d => d.seqlen), "Sequence Length Distribution")
    }
