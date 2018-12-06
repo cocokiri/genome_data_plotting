@@ -24,7 +24,7 @@
            folder: '.fastq',
            file: '.fastq.data.json'
        },
-       filenumbers: Array(2).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+       filenumbers: Array(10).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
    }
    const pathStitcher = (filenumber, meta = DATA_META) => {
        const {
@@ -34,6 +34,14 @@
        } = meta;
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
+   //should be in DATAhandler class...
+   const segment = (min = 0, max = 20) => DATA.clipFieldRange('seqlen', [0, 8000]).filter(data => data.mean_qscore >= min && data.mean_qscore <= max)
+   const segPlot = () => {
+       DATA.calculate(segment(parseInt(min.value), parseInt(max.value)))
+       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${min.value} -- ${max.value}`)
+       updateNodes(); //updates info on segmenting
+   }
+
    /*
    EVENTS 
    TODO: abstract hist and segmenting .... 
@@ -44,25 +52,9 @@
    qscore_dist.addEventListener("click", function() {
        hist(DATA.lastCalc.qscore_dist, "Quality Score Distribution")
    })
-   seq_per_range.addEventListener("click", function() {
-       segPlot()
-   })
-
-   //should be in DATAhandler class...
-   const segment = (min = 0, max = 20) => DATA.all.filter(data => data.mean_qscore >= min && data.mean_qscore <= max)
-   const segPlot =  () => {
-       DATA.calculate(segment(parseInt(min.value), parseInt(max.value)))
-       hist(DATA.lastCalc.seqlen_dist, `Sequence Lengths for QualScores Range | ${min.value} -- ${max.value}`)
-       updateNodes(); //updates info on segmenting
-   }
-
-   min.addEventListener("change", function(ev) {
-       segPlot()
-   })
-   max.addEventListener("change", function(ev) {
-       segPlot()
-
-   })
+   seq_per_range.addEventListener("click", segPlot)
+   min.addEventListener("change", segPlot)
+   max.addEventListener("change", segPlot)
 
 
    const render = async () => {
@@ -79,8 +71,7 @@
        }
        //so it's not skewed bc of one bad read...
        DATA.calculate(DATA.clipFieldRange('seqlen', [0, 8000]));
-       console.log(DATA, 'max', Math.max(...DATA.lastCalc.seqlen_dist))
-
-       hist(DATA.all.map(d => d.seqlen), "Sequence Length Distribution")
+    //    console.log(DATA, 'max', Math.max(...DATA.lastCalc.seqlen_dist))
+       hist(DATA.lastCalc.seqlen_dist, "Sequence Length Distribution")
    }
    render();
