@@ -1,3 +1,8 @@
+   import {
+       dumb_ndJsonTransform,
+       DataHandler
+   } from './utils.js';
+
    const DATA_META = {
        root: 'data',
        preffix: "/fastq_runid_b717de22d589c3d70b7e074e2ca3a933006f78c8_",
@@ -5,7 +10,7 @@
            folder: '.fastq',
            file: '.fastq.data.json'
        },
-       numbering: Array(10).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+       filenumbers: Array(10).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
    }
 
    const pathStitcher = (filenumber, meta = DATA_META) => {
@@ -14,23 +19,16 @@
            preffix,
            suffix
        } = meta;
+
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
-
-
-   console.log(pathStitcher(10));
-   const dumb_ndJsonTransform = (rawText) => rawText.split('\n').map(entry => JSON.parse(`[${entry}]`)).map(el => el[0])
 
    async function DataLoader(path) {
        try {
            const response = await fetch(path)
            //little roadbump here with ndJson
            var rawText = await response.text()
-
            return dumb_ndJsonTransform(rawText)
-
-           //    const json = JSON.parse(`[${rawText}]`)
-           //    console.log('data', json)
 
        } catch (error) {
            console.log('error at loading', error)
@@ -39,11 +37,16 @@
 
    }
 
-   const path = pathStitcher(10);
+   const render = async () => {
+       const path = pathStitcher(10);
+       const sample = await DataLoader(path);
+       console.log('sample', sample)
+   }
 
-   const x = DataLoader(path);
+   render();
 
-   /*
+
+   /* MOCKDATA for reference
          {
              "format_conversion": {
                  "alphabet_conversion": false,
