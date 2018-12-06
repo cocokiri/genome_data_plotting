@@ -9,18 +9,31 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script type="module" src="utils.js"></script>
     <script type="module" src='index.js'></script>
+    <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 
 
 <body>
-    <div class='info' id="tot_reads">HELLO</div>
-    <div class='info' id="tot_seqlen">HELLO</div>
-    <div class='info' id="avg_qscore">HELLO</div>
-    <div class='info' id="avg_seqlen">HELLO</div>
+    <div class='info' id="tot_reads">... </div>
+    <figcaption>Total Reads</figcaption>
+
+    <div class='info' id="tot_seqlen">...</div>
+    <figcaption>Total Yield</figcaption>
+
+    <div class='info' id="avg_qscore">... </div>
+    <figcaption>Average Quality Score</figcaption>
+
+
+    <div class='info' id="avg_seqlen">...</div>
+    <figcaption>Average Sequence Length</figcaption>
+
+
     <div id='plot'></div>
-    <button id="seq_dist"></button>
-    <button id="qscore_dist"></button>
-    <button id="seq_per_range"></button>
+    </div><button id="seq_dist">Sequences</button>
+    <button id="qscore_dist">Q_Scores</button>
+    <button id="seq_per_range">Sequence by QScore</button>
+    <input id='min' type="number" value=0 />
+    <input id='max' type="number" value=1000 />
 
 </body>
 

@@ -1,0 +1,12 @@
+button {
+    color: black;
+    background: yellow;
+    fontSize: 1.3em;
+    padding: 1em;
+}
+
+figcaption {
+    background: yellow;
+    color: grey;
+    font-style: italic;
+}

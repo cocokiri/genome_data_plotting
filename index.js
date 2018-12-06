@@ -5,8 +5,20 @@
        hist
    } from './utils.js';
 
+   const DATA = new DataHandler();
 
-   console.log("plotly", Plotly)
+   //Get NODES
+   const [tot_reads, tot_seqlen, avg_qscore, avg_seqlen, seq_dist, qscore_dist, seq_per_range] = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen', 'seq_dist', 'qscore_dist', 'seq_per_range'].map(id => document.getElementById(id))
+
+
+   const updateNodes = () => {
+       [tot_reads, tot_seqlen, avg_qscore, avg_seqlen].forEach(
+           node => {
+               node.innerText = DATA.lastCalc[node.id]
+           }
+       )
+   }
+
    const DATA_META = {
        root: 'data',
        preffix: "/fastq_runid_b717de22d589c3d70b7e074e2ca3a933006f78c8_",
@@ -16,54 +28,46 @@
        },
        filenumbers: Array(10).fill(10).map((el, idx) => el + idx) //[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
    }
-
    const pathStitcher = (filenumber, meta = DATA_META) => {
        const {
            root,
            preffix,
            suffix
        } = meta;
-
        return root + preffix + filenumber + suffix.folder + preffix + filenumber + suffix.file
    }
-
-   //get nodes
-   const [tot_reads, tot_seqlen, avg_qscore, avg_seqlen, seq_dist, qscore_dist, seq_per_range] = ['tot_reads', 'tot_seqlen', 'avg_qscore', 'avg_seqlen', 'seq_dist', 'qscore_dist', 'seq_per_range'].map(id => document.getElementById(id))
-
    /*
    EVENTS */
    seq_dist.addEventListener("click", function() {
-       //    hist()
+       hist(DATA.lastCalc.seqlen_dist, "Sequence Length Distribution")
    })
-  
-
-
+   qscore_dist.addEventListener("click", function() {
+       hist(DATA.lastCalc.qscore_dist, "Quality Score Distribution")
+   })
 
    const render = async () => {
-       const path = pathStitcher(10);
-       const sample = await DataLoader(path);
-       console.log('sample', sample)
+       const paths = DATA_META.filenumbers.map(num => pathStitcher(num));
+       for (const path of paths) {
+           const fileData = await DataLoader(path);
+           fileData.pop(); //yes, bad mutation. Last entry is ndJson undefined
+           DATA.addFile(fileData)
 
-       //yes, bad mutation. Last entry is undefined
-       sample.pop()
 
-       console.log(sample[0].barcode, sample.slice(0, 4).reduce((acc, val) => acc + val['seqlen'], 0))
-       const totalreads = sample.length;
-       const totalseqlen = sumField(sample, 'seqlen');
-       const avg_qual = sumField(sample, 'mean_qscore') / totalreads;
-       const avg_seqlen = sumField(sample, 'seqlen') / totalreads;
-       console.log(totalreads, totalseqlen, avg_qual, avg_seqlen)
+           //TODO just for cool loading update animation -- comment out if you want to wait for all data
 
-       const trace = {
-           title: "Sequence Length Distribution",
-           x: sample.map(e => e.seqlen),
-           type: 'histogram',
-       };
-       const data = [trace];
-       Plotly.newPlot('plot', data);
+           DATA.calculate()
+           updateNodes();
 
+           hist(fileData.map(d => d.seqlen), "Sequence Length Distribution")
+       }
+       DATA.calculate();
+       console.log(DATA)
+       console.log('max', Math.max(...DATA.lastCalc.seqlen_dist))
+
+       hist(DATA.all.map(d => d.seqlen), "Sequence Length Distribution")
    }
    render();
+
 
 
    /* MOCKDATA for reference

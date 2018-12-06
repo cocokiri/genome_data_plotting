@@ -14,13 +14,17 @@ class DataHandler {
         this.files.push(newData)
         return this;
     }
-    calculate(sample) {
+    calculate(sample = this.all) {
+        const tot_reads = sample.length;
         const calc = {
-            tot_reads: sample.length,
+            tot_reads,
             tot_seqlen: sumField(sample, 'seqlen'),
-            avg_qual: sumField(sample, 'mean_qscore') / totalreads,
-            avg_seqlen: sumField(sample, 'seqlen') / totalreads
+            avg_qscore: sumField(sample, 'mean_qscore') / tot_reads,
+            avg_seqlen: sumField(sample, 'seqlen') / tot_reads,
+            qscore_dist: sample.map(d => d.mean_qscore),
+            seqlen_dist: sample.map(d => d.seqlen)
         }
+        console.log(calc, `from ${sample.length} samples`)
         this.lastCalc = calc;
         return calc;
     }
@@ -39,7 +43,7 @@ function hist(x_values, title, nodeId = 'plot') {
 
 const sumField = (entries, fieldName) => entries.reduce((acc, val) => acc + val[fieldName], 0)
 
-async function DataLoader(path) {
+const DataLoader = async function(path) {
     try {
         const response = await fetch(path)
         //little roadbump here with ndJson
